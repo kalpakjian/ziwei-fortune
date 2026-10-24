@@ -108,6 +108,7 @@
     window.ZiweiReading.renderPalaceCards(result);
     renderPatterns(result.reading);
     renderFortune(result);
+    if (window.ZiweiReading.renderDataset) window.ZiweiReading.renderDataset(result);
   }
 
   window.ZiweiReading = Object.assign(window.ZiweiReading || {}, {

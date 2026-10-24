@@ -286,7 +286,10 @@ body.light .fortune-card { background: linear-gradient(170deg, rgba(255, 253, 24
   .chart-center { padding: 10px; }
   .cc-name { font-size: 17px; }
   .tab-panel { display: block !important; }
-  .tab-panel[data-panel="palaces"], .tab-panel[data-panel="patterns"], .tab-panel[data-panel="fortune"] { page-break-before: always; }
+  .tab-panel[data-panel="palaces"], .tab-panel[data-panel="patterns"], .tab-panel[data-panel="fortune"],
+  .tab-panel[data-panel="dataset"] { page-break-before: always; }
+  .dataset-card { break-inside: avoid; }
+  .dataset-card header { break-after: avoid; }
   .palace-cards { grid-template-columns: 1fr 1fr; }
   .palace-card { break-inside: avoid; }
   .palace-card > summary::after { display: none; }

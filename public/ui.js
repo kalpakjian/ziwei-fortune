@@ -78,7 +78,7 @@
     };
     tabs.forEach((tab) => tab.addEventListener('click', () => activate(tab.dataset.tab)));
     const initial = location.hash.replace('#', '');
-    if (['overview', 'palaces', 'patterns', 'fortune'].includes(initial)) activate(initial);
+    if (['overview', 'palaces', 'patterns', 'fortune', 'dataset'].includes(initial)) activate(initial);
   }
 
   let toastTimer = null;

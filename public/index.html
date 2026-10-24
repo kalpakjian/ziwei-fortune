@@ -41,6 +41,7 @@
   </div>
   <div class="header-actions">
     <button type="button" id="themeBtn" class="ghost-btn" aria-label="切換主題">淺色</button>
+    <button type="button" id="exportBtn" class="ghost-btn" aria-label="匯出解讀文字檔">匯出</button>
     <button type="button" id="printBtn" class="ghost-btn" aria-label="列印命盤">列印</button>
   </div>
 </header>
@@ -169,6 +170,7 @@
       <button type="button" class="tab" data-tab="palaces">十二宮</button>
       <button type="button" class="tab" data-tab="patterns">格局</button>
       <button type="button" class="tab" data-tab="fortune">大限流年</button>
+      <button type="button" class="tab" data-tab="dataset" id="datasetTab" hidden>詳細解讀</button>
     </nav>
 
     <div class="tab-panels">
@@ -218,12 +220,19 @@
           <ol class="timeline" id="timeline"></ol>
         </div>
       </section>
+
+      <section class="tab-panel" data-panel="dataset">
+        <div id="datasetPanel"></div>
+      </section>
     </div>
   </section>
 
   <footer class="site-footer">
     <p>紫微斗數排盤引擎：<a href="https://github.com/SylarLong/iztro" target="_blank" rel="noreferrer">iztro</a>（MIT）。
       解讀文字由本程式規則庫生成，僅供自我覺察與娛樂參考。</p>
+    <p>若本機裝有 v4.0 開源解讀資料集，「詳細解讀」分頁的內文來自
+      <a href="https://github.com/Renhuai123/ziwei-doushu" target="_blank" rel="noreferrer">Renhuai123/ziwei-doushu</a>
+      〈紫微斗數開源解讀資料集 v4.0〉（CC BY 4.0），原文為簡體中文。</p>
   </footer>
 </main>
 
@@ -233,8 +242,10 @@
 <script src="./interactions.js"></script>
 <script src="./reading.js"></script>
 <script src="./reading2.js"></script>
+<script src="./reading3.js"></script>
 <script src="./form.js"></script>
 <script src="./ui.js"></script>
+<script src="./export.js"></script>
 <script src="./app.js"></script>
 </body>
 </html>

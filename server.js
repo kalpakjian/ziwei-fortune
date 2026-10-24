@@ -3,6 +3,7 @@
 const path = require('path');
 const express = require('express');
 const { cast, TIME_OPTIONS, InputError } = require('./src');
+const dataset = require('./dataset');
 
 const app = express();
 const PORT = Number(process.env.PORT) || 5199;
@@ -23,7 +24,11 @@ app.get('/api/time-options', (req, res) => {
   res.json({ timeOptions: TIME_OPTIONS });
 });
 
-app.post('/api/chart', (req, res) => {
+app.get('/api/dataset/status', (req, res) => {
+  res.json(dataset.status());
+});
+
+app.post('/api/chart', async (req, res) => {
   try {
     const body = req.body || {};
     const result = cast({
@@ -37,6 +42,12 @@ app.post('/api/chart', (req, res) => {
       isLeapMonth: !!body.isLeapMonth,
       fixLeap: body.fixLeap !== false,
       fortuneYear: body.fortuneYear ? Number(body.fortuneYear) : undefined,
+    });
+    // v4.0 資料集是選用的：沒有下載資料集時只是少一段內容，不影響排盤
+    result.dataset = await dataset.lookup({
+      solarDate: result.chart.meta.solarDate,
+      timeIndex: Number(body.timeIndex),
+      gender: body.gender,
     });
     res.json(result);
   } catch (err) {

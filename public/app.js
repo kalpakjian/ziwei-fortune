@@ -141,6 +141,14 @@
       submitForm();
     });
 
+    $('exportBtn').addEventListener('click', () => {
+      if (!state.result) {
+        window.ZiweiUI.toast('請先排盤，再匯出解讀文字檔。');
+        return;
+      }
+      window.ZiweiExport.exportMarkdown(state.result);
+    });
+
     document.addEventListener('click', (ev) => {
       const link = ev.target.closest('.js-palace-link');
       if (!link) return;

@@ -10,9 +10,13 @@
     "build": "node scripts/build-static.mjs",
     "preview": "node scripts/static-server.mjs",
     "sync:hexo": "node scripts/sync-hexo.mjs",
+    "dataset:download": "node scripts/dataset-download.mjs",
+    "dataset:cache": "node scripts/dataset-cache.mjs",
+    "dataset:status": "node cli.js --dataset-status",
     "test": "node scripts/api-test.mjs",
     "test:e2e": "node scripts/smoke.mjs",
-    "test:static": "node scripts/static-test.mjs"
+    "test:static": "node scripts/static-test.mjs",
+    "test:dataset": "node scripts/dataset-test.mjs"
   },
   "keywords": [
     "ziwei",

@@ -22,6 +22,11 @@ const cases = [
     expect: (r) => /闰|閏/.test(r.chart.meta.lunarDate) && r.chart.palaces.length === 12,
   },
   {
+    name: '國曆・女・午時（含 v4.0 資料集欄位）',
+    body: { gender: '女', year: 1990, month: 5, day: 17, timeIndex: 6 },
+    expect: (r) => r.dataset && typeof r.dataset.available === 'boolean',
+  },
+  {
     name: '不存在的日期（應 400）',
     body: { gender: '女', year: 1990, month: 2, day: 31, timeIndex: 6 },
     status: 400,
@@ -60,6 +65,12 @@ for (const c of cases) {
 
 const health = await fetch(`${BASE}/api/health`);
 console.log(`${health.ok ? 'PASS' : 'FAIL'}  /api/health`);
+
+const dsStatus = await fetch(`${BASE}/api/dataset/status`);
+const dsData = await dsStatus.json().catch(() => null);
+const dsOk = dsStatus.ok && dsData && Array.isArray(dsData.years) && !!dsData.source;
+console.log(`${dsOk ? 'PASS' : 'FAIL'}  /api/dataset/status  [HTTP ${dsStatus.status}]`);
+
 const page = await fetch(BASE);
 console.log(`${page.ok ? 'PASS' : 'FAIL'}  GET / (${page.status})`);
 

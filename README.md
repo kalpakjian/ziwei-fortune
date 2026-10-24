@@ -17,7 +17,9 @@
 - **解讀**：命宮性格、身宮、三方四正、12 宮逐宮說明、五個面向分數。
 - **格局**：紫府同宮、殺破狼、機月同梁、陽梁昌祿、巨日對照、火貪、鈴貪、羊陀夾命等 20+ 條規則。
 - **運限**：目前大限、指定流年、小限、大限四化與流年四化落宮、12 個大限時間軸。
+- **詳細解讀**（選用）：接上 [v4.0 開源解讀資料集](https://github.com/Renhuai123/ziwei-doushu/releases/tag/v4.0-13d)，每張盤多出 13 個主題、2–3 萬字的逐項斷語（含古籍出處）。
 - **介面**：Qwen-Image 2.1 生成的星盤背景（深色主題）、墨金／淺色主題、手機可讀、可列印成 PDF、宮位三方四正互動高亮。
+- **匯出**：一鍵把整份解讀（含 v4.0 詳細解讀）輸出成 Markdown 檔，方便寄給朋友；列印 PDF 會自動把每個分頁各自起頁。
 - **CLI**：終端機直接排盤，適合快速對盤或批次檢查。
 
 ## 快速開始
@@ -43,6 +45,64 @@ node cli.js --help
 ```
 
 `--time` 是時辰索引：`0` 早子、`1` 丑、`2` 寅 … `6` 午 … `11` 亥、`12` 晚子。
+
+## v4.0 詳細解讀資料集（選用）
+
+本程式自己的規則庫是「通則級」：同一顆星不論落哪一宮，用的段落幾乎一樣。
+要拿到**逐盤、逐宮、有古籍出處**的詳細解讀，可以接上
+[Renhuai123/ziwei-doushu](https://github.com/Renhuai123/ziwei-doushu) 開源的
+〈紫微斗數開源解讀資料集 v4.0〉：
+
+- 674,976 張命盤（1950–2026 每個公曆真實日期 × 12 時辰 × 男女）× 13 個主題 = 8,774,688 段解讀
+- 每張盤約 2–3 萬字，含「命格總覽／性格／事業／財運／感情／健康／兄弟／子女／遷移／人際／田宅／福德／父母」
+- 授權 **CC BY 4.0**（可商用，唯一要求是保留來源標註）；其中引用倪海廈《天紀》原話者另受 CC BY-NC-SA 4.0 限制
+
+### 安裝
+
+```bash
+npm run dataset:download -- --year 1990      # 下載單一年度（每個年度檔約 2MB）
+npm run dataset:download -- --from 1990 --to 2000
+npm run dataset:download -- --all             # 全部年度（約 161MB）
+npm run dataset:status                        # 看目前裝了哪些年度
+npm run dataset:cache -- --year 1990          # 預先建立查詢索引
+```
+
+下載的檔案放在 `data/ziwei-v4/`（已列入 `.gitignore`），每個年度會用 SHA-256 對照
+官方 `MANIFEST.json` 校驗。查詢時會把該年度解壓成 `.jsonl` 並建立位移索引，
+解壓檔每個約 700MB，預設只保留 2 個年度（`ZIWEI_DATASET_CACHE_MAX` 可調）。
+
+### 使用
+
+```bash
+npm start                                     # 網頁版：多一個「詳細解讀」分頁
+node cli.js --date 1990-5-17 --time 6 --gender 女 --dataset
+node cli.js --dataset-status
+```
+
+網頁版的「詳細解讀」分頁在有資料集時才會出現；沒有資料集時，改用規則庫的解讀，
+功能不受影響。
+
+排完盤後按右上角的**「匯出」**，會得到一份 Markdown 檔（基本資料、總覽、性格、十二宮、
+格局、運限、v4.0 詳細解讀全文、授權出處與免責聲明），可直接寄給對方；
+按**「列印」**則會輸出成 PDF，五個分頁各自起頁。
+
+### 環境變數
+
+| 變數 | 用途 | 預設 |
+| --- | --- | --- |
+| `ZIWEI_DATASET_DIR` | 資料集目錄 | `data/ziwei-v4/` |
+| `ZIWEI_DATASET_CACHE` | 解壓後快取目錄 | `<資料集目錄>/.cache` |
+| `ZIWEI_DATASET_CACHE_MAX` | 保留幾個解壓年度檔 | `2` |
+| `ZIWEI_DATASET_ENABLED` | 設 `0` 可完全關閉 | 開啟 |
+
+### 限制
+
+- 資料集只涵蓋 **1950–2026 的公曆真實日期**，且只有 12 個時辰（子時算早子；
+  晚子時依本程式口徑對應到**隔日**的子時）。
+- 農曆輸入會先換算成公曆再查詢，換算結果以 `iztro` 為準。
+- 資料集原文是**簡體中文**，本程式不做繁簡轉換。
+- **GitHub Pages 的靜態版沒有這段功能**：靜態版完全在瀏覽器算，無法帶著 700MB 的年度檔跑；
+  要用詳細解讀請在本機跑 `npm start` 或 CLI。
 
 ## 視覺資產（雙主題背景圖）
 
@@ -212,15 +272,18 @@ Hexo 端只需做過一次設定：`_config.yml` 的 `skip_render` 加入 `ziwei
 }
 ```
 
-回傳三段資料：
+回傳四段資料：
 
 | 欄位 | 內容 |
 | --- | --- |
 | `chart` | 正規化後的命盤：`meta`、12 個 `palaces`（含 grid 座標、主星／輔星、四化、大限） |
 | `reading` | `summary`、`personality`、`palaces`、`dimensions`、`patterns`、`notes` |
 | `fortune` | `decadal`、`yearly`、`age`、`timeline`（12 個大限） |
+| `dataset` | v4.0 資料集查詢結果：`available`、`state`、`key`、`topics`（13 個主題的內文與字數）、`totalChars`、`source` |
 
-其他端點：`GET /api/health`、`GET /api/time-options`。
+其他端點：`GET /api/health`、`GET /api/time-options`、`GET /api/dataset/status`（資料集安裝狀態）。
+
+沒有安裝資料集時，`dataset.available` 會是 `false`，其餘欄位照常運作。
 
 錯誤一律回傳 `{ "error": "訊息" }`，並使用 HTTP 400。
 
@@ -243,6 +306,8 @@ src/
     minor-stars.js     輔星、煞星、雜曜
     palaces.js         地支、宮位、四化、亮度
     patterns.js        格局規則與五面向設定
+dataset/
+  index.js            v4.0 資料集讀取（僅 Node.js，不進瀏覽器版）
 public/
   index.html           單頁介面
   styles.css           版型、表單、主題
@@ -251,6 +316,7 @@ public/
   interactions.js      三方四正高亮、宮位詳情
   reading.js           總覽、十二宮卡片
   reading2.js          格局、運限、時間軸
+  reading3.js          v4.0 資料集的 13 維詳細解讀
   form.js              表單選項與資料收集
   ui.js                主題、分頁、列印
   app.js               請求與畫面組裝（有 engine 時走純前端）
@@ -263,6 +329,9 @@ scripts/
   static-test.mjs      驗證靜態版不呼叫 API、資源無 404
   api-test.mjs         後端 API 測試
   smoke.mjs            Playwright 端對端測試（含截圖）
+  dataset-download.mjs 下載 v4.0 資料集（SHA-256 校驗）
+  dataset-cache.mjs    建立／清理資料集查詢索引
+  dataset-test.mjs     資料集測試（key 對應、內容、優雅降級）
 ```
 
 ## 解讀引擎怎麼運作
@@ -282,6 +351,8 @@ npm run test:e2e  # 真實 Chromium：排盤、宮位互動、分頁、流年切
 
 npm run build && npm run preview   # 另一個終端機
 npm run test:static                # 靜態版：0 次 API 呼叫、子路徑資源、流年重算
+
+npm run test:dataset               # 資料集：key 對應、13 主題、與本程式排盤交叉比對
 ```
 
 `test:e2e` 會把截圖存到 `shots/`（已列入 `.gitignore`）。若自動找不到 Chromium，可設定 `CHROME_PATH` 指向 `chrome.exe`。
@@ -290,7 +361,7 @@ npm run test:static                # 靜態版：0 次 API 呼叫、子路徑資
 
 - **真太陽時**未實作。程式直接用輸入的鐘錶時間排盤；若你要用真太陽時，請先自行換算經度差與均時差。
 - **閏月**採 `iztro` 的 `fixLeap`（預設下半月算下個月）。不同流派對閏月與晚子時的口徑不同，若拿來對盤，請先確認設定一致。
-- **早子／晚子**以 `timeIndex` 0 與 12 區分，但不會自動把晚子時的日期加到隔天。
+- **早子／晚子**以 `timeIndex` 0 與 12 區分，但不會自動把晚子時的日期加到隔天（查 v4.0 資料集時則對應到隔日的子時，與 `iztro` 排盤口徑一致）。
 - **虛歲邊界**：流年虛歲以「流年 + 出生月日」代入 `horoscope()` 計算，生日前後可能與其他流派差一歲。
 - **分數**是程式自訂的相對指標（5–96），不是標準化量表，也不宜跨命盤比較。
 - 解讀文字是**通則**，尚未依性別、年齡、大限疊盤與流年逐月做完整權重；格局也只收錄常見的 20 餘條。
@@ -304,5 +375,6 @@ npm run test:static                # 靜態版：0 次 API 呼叫、子路徑資
 
 - 本專案程式碼：MIT（見 `LICENSE`）。
 - 排盤引擎：[iztro](https://github.com/SylarLong/iztro)，MIT。
-- 參考專案：[Renhuai123/ziwei-doushu](https://github.com/Renhuai123/ziwei-doushu)（Next.js 版排盤引擎與資料集）。本專案未使用該專案未開源的斷語庫、AI prompt 或商業版介面；所有解讀文字與規則為本專案自行撰寫。若你要商業化，請自行確認星曜資料、古籍原文與文本的授權範圍。
+- 參考專案：[Renhuai123/ziwei-doushu](https://github.com/Renhuai123/ziwei-doushu)（Next.js 版排盤引擎與資料集）。本專案未使用該專案未開源的斷語庫、AI prompt 或商業版介面；規則庫的解讀文字與規則為本專案自行撰寫。若你要商業化，請自行確認星曜資料、古籍原文與文本的授權範圍。
+- 詳細解讀資料集（選用）：〈紫微斗數開源解讀資料集 v4.0〉，[CC BY 4.0](https://github.com/Renhuai123/ziwei-doushu/blob/main/DATASET-LICENSE)，可商用但**必須保留來源標註**（本程式已在網頁與 CLI 標示出處）。資料集內引用倪海廈《天紀》原話的部分屬 CC BY-NC-SA 4.0，**不可商用**；要單獨成批使用那些原話，請依該專案第五章的授權處理。
 
