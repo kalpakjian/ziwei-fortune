@@ -28,6 +28,13 @@
         .split('\n')
         .map((l) => l.trim())
         .filter(Boolean);
+      // 資料集內文自帶 markdown 標題（## …），渲染成小標
+      if (lines[0] && /^#{1,6}\s/.test(lines[0])) {
+        html.push(`<h4 class="ds-h">${inline(lines[0].replace(/^#{1,6}\s*/, ''))}</h4>`);
+        const rest = lines.slice(1);
+        if (rest.length) html.push(`<p class="ds-p">${inline(rest.join(' '))}</p>`);
+        continue;
+      }
       if (lines.length > 1 && lines.every((l) => LIST_MARK.test(l))) {
         html.push(
           `<ul class="ds-list">${lines

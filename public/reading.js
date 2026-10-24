@@ -2,7 +2,7 @@
 
 /* 解讀面板：總覽、十二宮卡片。 */
 (function () {
-  const { esc } = window.ZiweiRender;
+  const { esc, palaceLabel } = window.ZiweiRender;
 
   function renderOverview(reading) {
     const personality = document.getElementById('personalityText');
@@ -65,7 +65,7 @@
         return `
           <details class="palace-card" ${isOpen ? 'open' : ''} data-index="${p.index}">
             <summary>
-              <span class="pc-title">${esc(p.name)}宮<small>${esc(p.stem)}${esc(
+              <span class="pc-title">${esc(palaceLabel(p.name))}<small>${esc(p.stem)}${esc(
                 p.branch
               )}</small></span>
               ${raw && raw.isBodyPalace ? '<span class="pc-tag">身宮</span>' : ''}

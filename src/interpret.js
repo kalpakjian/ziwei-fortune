@@ -9,6 +9,7 @@ const {
   PALACE_INFO,
   BRANCH_ELEMENT,
   FOUR_TRANSFORM,
+  palaceLabel,
 } = require('./knowledge');
 
 const ELEMENT_LUCK = {
@@ -82,7 +83,7 @@ function buildReading(astrolabe, options = {}) {
       : '命宮無主星，個性會隨著環境與年齡調整，彈性大但也容易沒有定見；建議用「環境選擇」來塑造自己，而不是硬逼自己固定成某一種人。',
     `三方四正會照：${surroundStars.length ? surroundStars.join('、') : '主星較少，需借對宮與大限補足'}。這組星曜決定了你在事業、財富與外出舞台上的基本盤。`,
     bodyPalace
-      ? `身宮落在${bodyPalace.name === '命宮' ? '命宮' : `${bodyPalace.name}宮`}，代表成年之後，人生的重心會逐漸偏向「${PALACE_INFO[bodyPalace.name]?.domain || bodyPalace.name}」，這也是你後天最值得投入的地方。`
+      ? `身宮落在${palaceLabel(bodyPalace.name)}，代表成年之後，人生的重心會逐漸偏向「${PALACE_INFO[bodyPalace.name]?.domain || bodyPalace.name}」，這也是你後天最值得投入的地方。`
       : '',
     soulMajor.length
       ? `給你的提醒：${unique(

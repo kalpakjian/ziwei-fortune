@@ -1,7 +1,7 @@
 'use strict';
 
 const { palaceScore, gradeOf } = require('./scoring');
-const { PALACE_INFO, MAJOR_STARS } = require('./knowledge');
+const { PALACE_INFO, MAJOR_STARS, palaceLabel } = require('./knowledge');
 const { findStarPalace, mapMutagens, surroundStarsOf } = require('./mutagens');
 
 function buildFortune(astrolabe, ctx, options = {}) {
@@ -44,7 +44,7 @@ function buildFortune(astrolabe, ctx, options = {}) {
   const yearStars = yearlyPalace.majorStars;
 
   const decadalText = [
-    `${ageFrom}–${ageTo} 歲（虛歲，約西元 ${decadalRangeYears[0]}–${decadalRangeYears[1]} 年）行 ${decadalPalace.heavenlyStem}${decadalPalace.earthlyBranch} 大限，大限命宮落在本命${decadalPalace.name}宮。`,
+    `${ageFrom}–${ageTo} 歲（虛歲，約西元 ${decadalRangeYears[0]}–${decadalRangeYears[1]} 年）行 ${decadalPalace.heavenlyStem}${decadalPalace.earthlyBranch} 大限，大限命宮落在本命${palaceLabel(decadalPalace.name)}。`,
     decStars.length
       ? `這十年的主調是：${decStars
           .map((s) => `${s.name}${s.brightness ? `（${s.brightness}）` : ''}──${
@@ -59,7 +59,7 @@ function buildFortune(astrolabe, ctx, options = {}) {
   ].filter(Boolean);
 
   const yearText = [
-    `${year} 年（${h.yearly.heavenlyStem}${h.yearly.earthlyBranch}）流年，流年命宮落在本命${yearlyPalace.name}宮，虛歲 ${h.age.nominalAge} 歲；小限在${agePalace.name}宮。`,
+    `${year} 年（${h.yearly.heavenlyStem}${h.yearly.earthlyBranch}）流年，流年命宮落在本命${palaceLabel(yearlyPalace.name)}，虛歲 ${h.age.nominalAge} 歲；小限在${palaceLabel(agePalace.name)}。`,
     yearStars.length
       ? `今年主題：${yearStars
           .map((s) => `${s.name}${s.brightness ? `（${s.brightness}）` : ''}──${

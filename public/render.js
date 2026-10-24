@@ -4,6 +4,11 @@
 (function () {
   const ESC = { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' };
   const esc = (v) => String(v ?? '').replace(/[&<>"']/g, (c) => ESC[c]);
+  /** 宮位名稱補上「宮」字：「命宮」本身已有「宮」，不再重複成「命宮宮」。 */
+  const palaceLabel = (name) => {
+    const n = String(name ?? '');
+    return n.endsWith('宮') ? n : `${n}宮`;
+  };
   const MUT_CLASS = { 祿: 'lu', 權: 'quan', 科: 'ke', 忌: 'ji' };
 
   function surroundOf(index) {
@@ -62,7 +67,7 @@
       el.setAttribute('role', 'button');
       el.setAttribute(
         'aria-label',
-        `${p.name}宮 ${p.heavenlyStem}${p.earthlyBranch}，${
+        `${palaceLabel(p.name)} ${p.heavenlyStem}${p.earthlyBranch}，${
           p.majorStars.map((s) => s.name).join('、') || '空宮'
         }`
       );
@@ -132,6 +137,7 @@
 
   window.ZiweiRender = {
     esc,
+    palaceLabel,
     renderChart,
     surroundOf,
     starHtml,

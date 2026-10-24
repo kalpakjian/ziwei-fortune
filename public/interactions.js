@@ -2,7 +2,7 @@
 
 /* 命盤互動：三方四正高亮、宮位詳情。 */
 (function () {
-  const { esc } = window.ZiweiRender;
+  const { esc, palaceLabel } = window.ZiweiRender;
 
   function toggleTrine(indices, on) {
     for (const i of indices) {
@@ -29,7 +29,7 @@
     detail.hidden = false;
     detail.innerHTML = `
       <div class="pd-head">
-        <h3>${esc(p.name)}宮<small>${esc(p.stem)}${esc(p.branch)}${
+        <h3>${esc(palaceLabel(p.name))}<small>${esc(p.stem)}${esc(p.branch)}${
           raw.isBodyPalace ? ' · 身宮' : ''
         }</small></h3>
         <button type="button" class="pd-close" aria-label="關閉">×</button>

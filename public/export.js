@@ -2,10 +2,15 @@
 
 /* 匯出：把整份解讀（含 v4.0 資料集）輸出成 Markdown 檔，方便寄給朋友。 */
 (function () {
-  const { esc } = window.ZiweiRender;
+  const { esc, palaceLabel } = window.ZiweiRender;
 
   function line(text) {
     return String(text ?? '').replace(/\r\n/g, '\n').trim();
+  }
+
+  /** 資料集內文自帶 markdown 標題，匯出時往下壓一層，避免與主題標題同級 */
+  function demoteHeadings(text) {
+    return String(text || '').replace(/^(#{1,5})\s/gm, (m, hashes) => `${hashes}# `);
   }
 
   function buildMarkdown(result) {
@@ -41,7 +46,7 @@
     out.push('');
     reading.palaces.forEach((p) => {
       const stars = p.stars.map((s) => s.name + (s.mutagen ? `化${s.mutagen}` : '')).join('、') || '空宮';
-      out.push(`### ${p.name}宮（${p.stem}${p.branch}）· ${p.score} 分／${p.grade}`);
+      out.push(`### ${palaceLabel(p.name)}（${p.stem}${p.branch}）· ${p.score} 分／${p.grade}`);
       out.push(`星曜：${stars}`);
       out.push('');
       out.push(line(p.text));
@@ -78,11 +83,17 @@
       dataset.topics.forEach((t) => {
         out.push(`### ${t.label}（${t.chars.toLocaleString()} 字）`);
         out.push('');
-        out.push(line(t.text));
+        out.push(line(demoteHeadings(t.text)));
         out.push('');
       });
       out.push(`> 出處：${dataset.source.attribution}`);
       out.push(`> ${dataset.source.note}`);
+      out.push('');
+    } else if (dataset) {
+      out.push('## 詳細解讀（v4.0 資料集）');
+      out.push('');
+      out.push(`> 本份匯出**不含**v4.0 詳細解讀：${dataset.message || '本機沒有對應年度的資料集。'}`);
+      out.push('> 若要完整內容，請在裝有資料集的機器上重新排盤後匯出（npm run dataset:download -- --year <西元年>）。');
       out.push('');
     }
 

@@ -72,4 +72,11 @@ module.exports = {
   FOUR_TRANSFORM,
   BRIGHTNESS_SCORE,
   BRIGHTNESS_NOTE,
+  palaceLabel,
 };
+
+/** 宮位名稱補上「宮」字：「命宮」本身已有「宮」，不再重複成「命宮宮」。 */
+function palaceLabel(name) {
+  const n = String(name || '');
+  return n.endsWith('宮') ? n : `${n}宮`;
+}

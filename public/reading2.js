@@ -2,7 +2,7 @@
 
 /* 解讀面板：格局、大限流年、時間軸。 */
 (function () {
-  const { esc } = window.ZiweiRender;
+  const { esc, palaceLabel } = window.ZiweiRender;
 
   const TONE_LABEL = { good: '吉格', bad: '需留意', neutral: '中性' };
 
@@ -64,13 +64,13 @@
     const name = result.chart.meta.name || '命主';
     document.getElementById(
       'fortuneSub'
-    ).textContent = `${name} · 西元 ${f.year} 年 · 虛歲 ${f.nominalAge} 歲 · 小限在${f.age.palace}宮`;
+    ).textContent = `${name} · 西元 ${f.year} 年 · 虛歲 ${f.nominalAge} 歲 · 小限在${palaceLabel(f.age.palace)}`;
 
     document.getElementById('fortuneGrid').innerHTML =
       card({
         kicker: `大限 ${f.decadal.range[0]}–${f.decadal.range[1]} 歲（約 ${f.decadal.years[0]}–${f.decadal.years[1]}）`,
         title: `${f.decadal.stemBranch} 大限`,
-        sub: `大限命宮在本命${f.decadal.palace}宮 · ${f.decadal.domain}`,
+        sub: `大限命宮在本命${palaceLabel(f.decadal.palace)} · ${f.decadal.domain}`,
         score: f.decadal.score,
         grade: f.decadal.grade,
         stars: f.decadal.stars,
@@ -80,7 +80,7 @@
       card({
         kicker: `${f.year} 流年`,
         title: `${f.yearly.stemBranch} 流年`,
-        sub: `流年命宮在本命${f.yearly.palace}宮 · ${f.yearly.domain}`,
+        sub: `流年命宮在本命${palaceLabel(f.yearly.palace)} · ${f.yearly.domain}`,
         score: f.yearly.score,
         grade: f.yearly.grade,
         stars: f.yearly.stars,
@@ -93,7 +93,7 @@
         (t) => `
         <li class="${t.isCurrent ? 'is-current' : ''}">
           <span class="tl-age">${t.ageFrom}–${t.ageTo} 歲</span>
-          <span class="tl-palace">${esc(t.stemBranch)} · ${esc(t.palace)}宮${
+          <span class="tl-palace">${esc(t.stemBranch)} · ${esc(palaceLabel(t.palace))}${
           t.isCurrent ? '（現在）' : ''
         }</span>
           <span class="tl-year">${t.yearFrom}–${t.yearTo}</span>
