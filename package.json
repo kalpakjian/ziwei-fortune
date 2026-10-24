@@ -13,6 +13,7 @@
     "dataset:download": "node scripts/dataset-download.mjs",
     "dataset:cache": "node scripts/dataset-cache.mjs",
     "dataset:status": "node cli.js --dataset-status",
+    "md2txt": "node scripts/md2txt.mjs",
     "test": "node scripts/api-test.mjs",
     "test:e2e": "node scripts/smoke.mjs",
     "test:static": "node scripts/static-test.mjs",

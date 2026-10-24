@@ -170,5 +170,30 @@
     download(`${head}${body}`, `命盤解讀_批次_${list.length}人_${stamp}.md`);
   }
 
-  window.ZiweiExport = { buildMarkdown, exportMarkdown, exportBatch };
+  /** 匯出純文字（可直接貼到通訊軟體） */
+  function exportPlainText(result) {
+    if (!result) return;
+    const md = buildMarkdown(result);
+    const text = window.ZiweiMd2Txt ? window.ZiweiMd2Txt.convert(md) : md;
+    const meta = result.chart.meta;
+    download(text, `命盤解讀_${safeName(meta.name)}_${meta.solarDate}.txt`);
+  }
+
+  /** 批次匯出純文字 */
+  function exportBatchText(results) {
+    const list = (results || []).filter(Boolean);
+    if (!list.length) return;
+    const stamp = new Date().toISOString().slice(0, 10);
+    const md = list.map((r) => buildMarkdown(r)).join('\n\n---\n\n');
+    const text = window.ZiweiMd2Txt ? window.ZiweiMd2Txt.convert(md) : md;
+    download(text, `命盤解讀_批次_${list.length}人_${stamp}.txt`);
+  }
+
+  window.ZiweiExport = {
+    buildMarkdown,
+    exportMarkdown,
+    exportBatch,
+    exportPlainText,
+    exportBatchText,
+  };
 })();

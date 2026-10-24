@@ -405,10 +405,10 @@ function setStatus(text) {
       setStatus('沒有排盤成功的資料。');
       return;
     }
-    window.ZiweiExport.exportBatch(results);
+    window.ZiweiExport.exportBatchText(results);
     const withDataset = results.filter((x) => x.dataset && x.dataset.available).length;
     setStatus(
-      `完成 ${results.length} 筆，已合併匯出${
+      `完成 ${results.length} 筆，已合併匯出純文字檔${
         withDataset
           ? `（其中 ${withDataset} 筆含 v4.0 詳細解讀）`
           : '（此版本沒有 v4.0 資料集，只有規則庫解讀）'
