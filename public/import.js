@@ -1,6 +1,6 @@
 'use strict';
 
-/* 匯入：把生辰（或八字）一次貼上，直接排盤並匯出詳細解讀。 */
+/* 匯入：把 .md 命盤解讀檔拖進來（或貼一行生辰／八字），直接排盤。 */
 (function () {
   const { esc } = window.ZiweiRender;
 
@@ -9,11 +9,9 @@
     '未時', '申時', '酉時', '戌時', '亥時', '晚子時',
   ];
   const HOUR_CHARS = ['子', '丑', '寅', '卯', '辰', '巳', '午', '未', '申', '酉', '戌', '亥'];
-  const STEMS = '甲乙丙丁戊己庚辛壬癸';
-  const BRANCHES = '子丑寅卯辰巳午未申酉戌亥';
   const GANZHI = window.ZiweiGanzhi ? window.ZiweiGanzhi.GAN_ZHI : [];
 
-  /** 每行的解析結果 */
+  /** 目前解析出來的資料 */
   let records = [];
 
   function isGanzhi(token) {
@@ -31,6 +29,8 @@
   function pickHour(text) {
     const late = /晚\s*[子時时]/.exec(text);
     if (late) return { index: 12, matched: late[0] };
+    const early = /早\s*[子時时]/.exec(text);
+    if (early) return { index: 0, matched: early[0] };
     const withShi = /([子丑寅卯辰巳午未申酉戌亥])\s*[時时]/.exec(text);
     if (withShi) {
       const idx = HOUR_CHARS.indexOf(withShi[1]);
@@ -65,9 +65,44 @@
     return { pillars: four, matched: four.join(' ') };
   }
 
-  /** 單行解析 */
-  function parseLine(raw, index) {
+  /** 移除已辨識的片段，剩下的當姓名 */
+  function cleanName(line, skipParts) {
+    let rest = line;
+    skipParts.filter(Boolean).forEach((s) => {
+      rest = rest.replace(s, ' ');
+    });
+    rest = rest.replace(/[，,、;；|]+/g, ' ').replace(/\s+/g, ' ').trim();
+    if (/^\d+$/.test(rest)) return '';
+    return rest.slice(0, 20);
+  }
+
+  /** 建立一筆空資料 */
+  function blankRecord(index) {
+    return {
+      index,
+      name: '',
+      calendar: 'solar',
+      year: '',
+      month: '',
+      day: '',
+      timeIndex: 6,
+      gender: '女',
+      note: '',
+      alternatives: [],
+      source: '',
+    };
+  }
+
+/**
+   * 解析一行生辰或八字。
+   * @param {string} raw 一行文字
+   * @param {number} index 序號
+   * @param {string} source 來源說明（檔名等）
+   */
+  function parseLine(raw, index, source) {
     const line = String(raw || '').trim();
+    const rec = blankRecord(index);
+    rec.source = source || '';
     if (!line || line.startsWith('#')) return null;
 
     const bazi = pickBazi(line);
@@ -75,19 +110,6 @@
     const hour = pickHour(line);
     const gender = pickGender(line);
     const calendar = pickCalendar(line);
-
-    const rec = {
-      index,
-      name: '',
-      calendar: calendar ? calendar.value : 'solar',
-      year: '',
-      month: '',
-      day: '',
-      timeIndex: hour ? hour.index : 6,
-      gender: gender ? gender.value : '女',
-      note: '',
-      alternatives: [],
-    };
 
     if (bazi) {
       const G = window.ZiweiGanzhi;
@@ -122,7 +144,7 @@
         timeIndex: c.timeIndex,
       }));
       if (relaxed) {
-        rec.note = `月柱對不上（可能是農曆月柱），已列出同日柱的可能日期`;
+        rec.note = '月柱對不上（可能是農曆月柱），已列出同日柱的可能日期';
       } else if (candidates.length > 1) {
         rec.note = `八字對到 ${candidates.length} 個可能，已選第一個`;
       }
@@ -139,8 +161,11 @@
     rec.year = date.year;
     rec.month = date.month;
     rec.day = date.day;
-    if (!hour) rec.note = '沒指定時辰，預設午時';
-    if (!gender) rec.note = (rec.note ? rec.note + '；' : '') + '沒指定性別，預設女';
+    if (hour) rec.timeIndex = hour.index;
+    else rec.note = '沒指定時辰，預設午時';
+    if (gender) rec.gender = gender.value;
+    else rec.note = (rec.note ? rec.note + '；' : '') + '沒指定性別，預設女';
+    if (calendar) rec.calendar = calendar.value;
 
     const skip = [date.matched];
     if (hour) skip.push(hour.matched);
@@ -150,42 +175,92 @@
     return rec;
   }
 
-  /** 移除已辨識的片段，剩下的當姓名 */
-  function cleanName(line, skipParts) {
-    let rest = line;
-    skipParts.filter(Boolean).forEach((s) => {
-      rest = rest.replace(s, ' ');
+  /**
+   * 解析匯出檔（.md）：從標題與基本資料取出姓名、性別、國曆、時辰。
+   */
+  function parseMarkdown(text, source) {
+    const src = String(text || '').replace(/\r\n/g, '\n');
+    const rec = blankRecord(0);
+    rec.source = source || '';
+
+    const title = /^#\s*(.+?)\s*的命盤解讀/m.exec(src);
+    if (title) rec.name = title[1].trim().slice(0, 20);
+
+    const gender = /性別：\s*([男女])/.exec(src);
+    if (gender) rec.gender = gender[1];
+
+    const date = /國曆：\s*(\d{4})-(\d{1,2})-(\d{1,2})/.exec(src);
+    if (date) {
+      rec.year = Number(date[1]);
+      rec.month = Number(date[2]);
+      rec.day = Number(date[3]);
+    }
+
+    const hour = /（\s*(早子時|晚子時|[子丑寅卯辰巳午未申酉戌亥]時)\s/.exec(src);
+    if (hour) {
+      const label = hour[1];
+      if (label === '早子時') rec.timeIndex = 0;
+      else if (label === '晚子時') rec.timeIndex = 12;
+      else rec.timeIndex = HOUR_CHARS.indexOf(label[0]);
+    }
+
+    const lunar = /農曆：\s*([^\n·]+)/.exec(src);
+    if (lunar) rec.lunarText = lunar[1].trim();
+
+    if (!rec.year) {
+      rec.error = true;
+      rec.note = '這個檔案裡看不出國曆生日';
+    } else if (!hour) {
+      rec.note = '檔案裡沒有時辰，預設午時';
+    }
+    return rec;
+  }
+function setStatus(text) {
+    const el = document.getElementById('importStatus');
+    if (el) el.textContent = text || '';
+  }
+
+  function currentRecords() {
+    return records.filter((r) => !r.error && r.year && r.month && r.day);
+  }
+
+  /** 把一筆資料填進主表單 */
+  function fillForm(rec) {
+    const app = window.ZiweiApp;
+    if (!app || !app.fillForm) return;
+    app.fillForm({
+      name: rec.name || '',
+      gender: rec.gender || '女',
+      calendar: rec.calendar || 'solar',
+      year: Number(rec.year),
+      month: Number(rec.month),
+      day: Number(rec.day),
+      timeIndex: Number(rec.timeIndex),
+      isLeapMonth: document.getElementById('importLeap')?.checked === true,
     });
-    rest = rest.replace(/[，,、;；|]+/g, ' ').replace(/\s+/g, ' ').trim();
-    if (/^\d+$/.test(rest)) return '';
-    return rest.slice(0, 20);
   }
 
-  function parseAll(text) {
-    const lines = String(text || '').split(/\r?\n/);
-    records = lines.map((line, i) => parseLine(line, i)).filter(Boolean);
-    renderPreview();
-    const ok = records.filter((r) => !r.error).length;
-    setStatus(`解析完成：${ok} 筆可用${records.length > ok ? `，${records.length - ok} 筆有問題` : ''}。`);
-  }
-
+  /** 顯示解析結果，可逐欄修正 */
   function renderPreview() {
     const wrap = document.getElementById('importPreview');
     if (!wrap) return;
     if (!records.length) {
-      wrap.innerHTML = '<p class="import-empty">尚未貼上資料。</p>';
+      wrap.innerHTML = '';
       return;
     }
     const rows = records
       .map((r, i) => {
         const alts =
           r.alternatives && r.alternatives.length > 1
-            ? `<select class="import-alt" data-alt="${i}" title="八字對到的其他可能">
+            ? `<select class="import-alt" data-alt="${i}" title="其他可能">
                  ${r.alternatives
                    .map(
                      (a) =>
                        `<option value="${a.year}-${a.month}-${a.day}-${a.timeIndex}"${
-                         a.year === r.year && a.month === r.month && a.day === r.day && a.timeIndex === r.timeIndex
+                         a.year === r.year &&
+                         a.month === r.month &&
+                         a.day === r.day &&
+                         a.timeIndex === r.timeIndex
                            ? ' selected'
                            : ''
                        }>${a.year}-${a.month}-${a.day} ${HOUR_LABELS[a.timeIndex]}</option>`
@@ -218,11 +293,12 @@
                 <option value="女"${r.gender === '女' ? ' selected' : ''}>女</option>
               </select>
             </td>
-            <td class="import-note">${esc(r.note || '')}${alts}</td>
+            <td class="import-note">${esc(r.source ? r.source + '：' : '')}${esc(r.note || '')}${alts}</td>
           </tr>`;
       })
       .join('');
-wrap.innerHTML = `
+
+    wrap.innerHTML = `
       <div class="import-scroll">
         <table class="import-table">
           <thead>
@@ -238,9 +314,6 @@ wrap.innerHTML = `
         el.addEventListener('change', () => {
           const field = el.dataset.field;
           records[idx][field] = field === 'timeIndex' ? Number(el.value) : el.value;
-          if (field === 'calendar' && el.value === 'lunar') {
-            setStatus('提醒：農曆日期請確認是否閏月（可用下方勾選，或改用國曆）。');
-          }
         });
       });
       const alt = tr.querySelector('[data-alt]');
@@ -257,50 +330,51 @@ wrap.innerHTML = `
     });
   }
 
-  function setStatus(text) {
-    const el = document.getElementById('importStatus');
-    if (el) el.textContent = text || '';
+/** 讀檔並解析（.md 匯出檔或純文字） */
+  async function handleFiles(fileList) {
+    const files = [...(fileList || [])].filter(
+      (f) => /\.(md|markdown|txt)$/i.test(f.name) || /text\//.test(f.type)
+    );
+    if (!files.length) {
+      setStatus('請拖入 .md（Markdown）或 .txt 檔案。');
+      return;
+    }
+    setStatus(`讀取 ${files.length} 個檔案…`);
+    const parsed = [];
+    for (const f of files) {
+      let text = '';
+      try {
+        text = await f.text();
+      } catch (err) {
+        setStatus(`讀取「${f.name}」失敗：${err.message}`);
+        continue;
+      }
+      const isExport = /命盤解讀/.test(text) || /^#\s/m.test(text);
+      const rec = isExport
+        ? parseMarkdown(text, f.name)
+        : parseLine(text, parsed.length, f.name) || parseMarkdown(text, f.name);
+      if (rec) parsed.push(rec);
+    }
+    records = parsed;
+    renderPreview();
+    await runRecords();
   }
 
-  function currentRecords() {
-    return records.filter((r) => !r.error && r.year && r.month && r.day);
-  }
-
-  /** 把一筆資料填進主表單 */
-  function fillForm(rec) {
-    const app = window.ZiweiApp;
-    if (!app || !app.fillForm) return;
-    app.fillForm({
-      name: rec.name || '',
-      gender: rec.gender || '女',
-      calendar: rec.calendar || 'solar',
-      year: Number(rec.year),
-      month: Number(rec.month),
-      day: Number(rec.day),
-      timeIndex: Number(rec.timeIndex),
-      isLeapMonth: document.getElementById('importLeap')?.checked === true,
-    });
-  }
-
-  async function importFirst() {
+  /** 依解析結果排盤：單筆直接顯示，多筆合併匯出 */
+  async function runRecords() {
     const list = currentRecords();
     if (!list.length) {
       setStatus('沒有可匯入的資料。');
       return;
     }
-    fillForm(list[0]);
-    setStatus(`已匯入「${list[0].name || '未命名'}」，開始排盤…`);
-    await window.ZiweiApp.submitForm();
-    document.getElementById('result')?.scrollIntoView({ behavior: 'smooth', block: 'start' });
-  }
-
-
-async function importBatch() {
-    const list = currentRecords();
-    if (!list.length) {
-      setStatus('沒有可匯入的資料。');
+    if (list.length === 1) {
+      fillForm(list[0]);
+      setStatus(`已匯入「${list[0].name || '未命名'}」，完整解讀見下方。`);
+      await window.ZiweiApp.submitForm();
+      document.getElementById('result')?.scrollIntoView({ behavior: 'smooth', block: 'start' });
       return;
     }
+
     const fortuneYear =
       Number(document.getElementById('fortuneYear')?.value) || new Date().getFullYear();
     const leap = document.getElementById('importLeap')?.checked === true;
@@ -334,7 +408,7 @@ async function importBatch() {
     window.ZiweiExport.exportBatch(results);
     const withDataset = results.filter((x) => x.dataset && x.dataset.available).length;
     setStatus(
-      `完成 ${results.length} 筆，已匯出${
+      `完成 ${results.length} 筆，已合併匯出${
         withDataset
           ? `（其中 ${withDataset} 筆含 v4.0 詳細解讀）`
           : '（此版本沒有 v4.0 資料集，只有規則庫解讀）'
@@ -342,15 +416,57 @@ async function importBatch() {
     );
   }
 
-  function init() {
-    const parseBtn = document.getElementById('importParseBtn');
-    if (!parseBtn) return;
-    parseBtn.addEventListener('click', () => {
-      parseAll(document.getElementById('importText').value);
-    });
-    document.getElementById('importFirstBtn').addEventListener('click', importFirst);
-    document.getElementById('importBatchBtn').addEventListener('click', importBatch);
+  /** 貼上一行生辰或八字 */
+  function importText() {
+    const el = document.getElementById('importText');
+    const line = (el?.value || '').trim();
+    if (!line) {
+      setStatus('請先貼上一行生辰或八字。');
+      return;
+    }
+    const rec = parseLine(line, 0, '貼上的文字');
+    if (!rec) {
+      setStatus('看不懂這行資料。');
+      return;
+    }
+    records = [rec];
+    renderPreview();
+    runRecords();
   }
 
-  window.ZiweiImport = { init, parseAll, parseLine, records: () => records };
+  function init() {
+    const zone = document.getElementById('importDrop');
+    if (!zone) return;
+
+    ['dragenter', 'dragover'].forEach((evt) =>
+      zone.addEventListener(evt, (e) => {
+        e.preventDefault();
+        zone.classList.add('is-over');
+      })
+    );
+    ['dragleave', 'dragend'].forEach((evt) =>
+      zone.addEventListener(evt, () => zone.classList.remove('is-over'))
+    );
+    zone.addEventListener('drop', (e) => {
+      e.preventDefault();
+      zone.classList.remove('is-over');
+      handleFiles(e.dataTransfer && e.dataTransfer.files);
+    });
+
+    const picker = document.getElementById('importPick');
+    if (picker) {
+      picker.addEventListener('change', () => {
+        handleFiles(picker.files);
+        picker.value = '';
+      });
+    }
+    const btn = document.getElementById('importPickBtn');
+    if (btn) btn.addEventListener('click', () => picker && picker.click());
+
+    const textBtn = document.getElementById('importTextBtn');
+    if (textBtn) textBtn.addEventListener('click', importText);
+  }
+
+  window.ZiweiImport = { init, parseLine, parseMarkdown, handleFiles, records: () => records };
 })();
+

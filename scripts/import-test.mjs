@@ -17,6 +17,7 @@ vm.runInNewContext(fs.readFileSync(path.join(ROOT, 'public', 'ganzhi-data.js'), 
 vm.runInNewContext(fs.readFileSync(path.join(ROOT, 'public', 'ganzhi.js'), 'utf8'), sandbox);
 vm.runInNewContext(fs.readFileSync(path.join(ROOT, 'public', 'import.js'), 'utf8'), sandbox);
 const parseLine = sandbox.window.ZiweiImport.parseLine;
+const parseMarkdown = sandbox.window.ZiweiImport.parseMarkdown;
 
 let failed = 0;
 function check(name, ok, detail) {
@@ -84,6 +85,53 @@ const cases = [
 
 for (const c of cases) {
   const r = parseLine(c.line, 0);
+  const ok = !!r && c.expect(r);
+  check(c.name, ok, ok ? '' : JSON.stringify(r));
+}
+
+// .md 匯出檔的解析（拖進來的檔案）
+const mdSample = `# 劉德亮 的命盤解讀
+
+- 性別：男
+- 國曆：1970-11-6（巳時 09:00~11:00）
+- 農曆：一九七〇年十月初八 · 庚戌 丁亥 庚寅 辛巳
+- 五行局：木三局 · 命主 破軍 · 身主 文昌
+- 生肖 狗 · 命宮在午
+
+## 總覽（60 分／平穩）
+`;
+
+const mdCases = [
+  {
+    name: '匯出檔：姓名',
+    expect: (r) => r.name === '劉德亮',
+  },
+  {
+    name: '匯出檔：性別',
+    expect: (r) => r.gender === '男',
+  },
+  {
+    name: '匯出檔：國曆日期',
+    expect: (r) => r.year === 1970 && r.month === 11 && r.day === 6,
+  },
+  {
+    name: '匯出檔：時辰（巳時）',
+    expect: (r) => r.timeIndex === 5,
+  },
+  {
+    name: '匯出檔：不是匯出檔時標記錯誤',
+    text: '這是一般筆記\n沒有生辰資料',
+    expect: (r) => r.error === true,
+  },
+  {
+    name: '匯出檔：晚子時',
+    text: '# 王小明 的命盤解讀\n\n- 性別：女\n- 國曆：1990-5-17（晚子時 23:00~23:59）\n',
+    expect: (r) => r.timeIndex === 12 && r.year === 1990,
+  },
+];
+
+for (const c of mdCases) {
+  const r = parseMarkdown(c.text || mdSample, 'test.md');
   const ok = !!r && c.expect(r);
   check(c.name, ok, ok ? '' : JSON.stringify(r));
 }

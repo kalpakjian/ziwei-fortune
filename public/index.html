@@ -130,8 +130,8 @@
 
   <details class="panel import-panel" id="importPanel">
     <summary>
-      <span class="import-summary-title">匯入生辰（批次）</span>
-      <span class="import-summary-hint">朋友給的生辰或八字，貼上就能一次排完並匯出詳細解讀</span>
+      <span class="import-summary-title">匯入命盤</span>
+      <span class="import-summary-hint">把 .md 命盤解讀檔拖進來，或貼上生辰／八字</span>
     </summary>
     <div class="import-body">
       <p class="form-note">
@@ -139,16 +139,21 @@
         <code>1970-11-6 巳時 男 劉德亮</code>、<code>劉德亮 1990-5-17 午時 女</code>、
         <code>農曆 1990-4-23 子時 男</code>、<code>庚戌 丁亥 庚寅 辛巳</code>（四柱八字，會自動換算西元日期）。
       </p>
-      <textarea id="importText" rows="4" spellcheck="false" placeholder="每行一筆，例如：&#10;1970-11-6 巳時 男 劉德亮&#10;1990-5-17 午時 女 王小明"></textarea>
+      <div class="import-drop" id="importDrop">
+        <p class="import-drop-title">把 .md 檔案拖到這裡</p>
+        <p class="import-drop-hint">匯出過的「命盤解讀_xxx.md」都能直接拖進來，會自動帶出生辰並重新排盤</p>
+        <button type="button" id="importPickBtn" class="text-btn">選擇檔案</button>
+        <input type="file" id="importPick" accept=".md,.markdown,.txt,text/plain,text/markdown" multiple hidden />
+      </div>
+      <div class="import-or"><span>或直接貼一行</span></div>
+      <div class="import-inline">
+        <input type="text" id="importText" spellcheck="false" placeholder="例：1970-11-6 巳時 男 劉德亮／庚戌 丁亥 庚寅 辛巳" />
+        <button type="button" id="importTextBtn" class="text-btn">匯入</button>
+      </div>
       <div class="import-actions">
-        <button type="button" id="importParseBtn" class="text-btn">解析</button>
-        <label class="leap-toggle"><input type="checkbox" id="importLeap" />農曆視為閏月</label>
+        <label class="leap-toggle"><input type="checkbox" id="importLeap" />貼上的農曆日期視為閏月</label>
       </div>
       <div id="importPreview"></div>
-      <div class="import-actions">
-        <button type="button" id="importFirstBtn" class="primary-btn">匯入第一筆並排盤</button>
-        <button type="button" id="importBatchBtn" class="primary-btn">批次排盤並匯出詳細解讀</button>
-      </div>
       <p class="form-note" id="importStatus"></p>
     </div>
   </details>
