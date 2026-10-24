@@ -1,0 +1,240 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<!-- 宣告「只支援淺色」：Chrome「自動深色模式／深色網站」會直接跳過本頁，
+     不再整頁反相（也就沒有 F5 後的閃爍），見 developer.chrome.com/blog/auto-dark-theme -->
+<meta name="color-scheme" content="only light" />
+<!-- 告訴 Dark Reader 不要改寫本頁：本站已有自己的深／淺主題，
+     若 Dark Reader 再疊一層暗色樣式，命盤配色與底圖會失真。
+     （content 屬性一併寫上，相容較舊的判斷實作） -->
+<meta name="darkreader-lock" content="true" />
+<title>紫微斗數 · 命盤解讀</title>
+<meta name="description" content="輸入出生資料，即時排出紫微斗數十二宮命盤，並取得性格、事業、財運、感情、健康與大限流年的規則式解讀。" />
+<link rel="icon" type="image/svg+xml" href="./favicon.svg" />
+<link rel="stylesheet" href="./styles.css" />
+<link rel="stylesheet" href="./chart.css" />
+<script>
+  /* 淺色主題的背景圖先預載，開頁時才不會出現背景圖閃現一下 */
+  try {
+    if (localStorage.getItem('ziwei-theme') === 'light') {
+      var bgHref = window.matchMedia('(max-width: 760px)').matches
+        ? './bg-ziwei-light-mobile.jpg'
+        : './bg-ziwei-light.jpg';
+      var bgLink = document.createElement('link');
+      bgLink.rel = 'preload';
+      bgLink.as = 'image';
+      bgLink.href = bgHref;
+      document.head.appendChild(bgLink);
+    }
+  } catch (err) {
+    /* 忽略預載失敗 */
+  }
+</script>
+</head>
+<body>
+<header class="site-header">
+  <div class="brand">
+    <span class="brand-mark">紫</span>
+    <span class="brand-text">紫微斗數<small>命盤解讀</small></span>
+  </div>
+  <div class="header-actions">
+    <button type="button" id="themeBtn" class="ghost-btn" aria-label="切換主題">淺色</button>
+    <button type="button" id="printBtn" class="ghost-btn" aria-label="列印命盤">列印</button>
+  </div>
+</header>
+
+<main class="page">
+  <section class="hero">
+    <p class="eyebrow">ZI WEI DOU SHU · 十二宮命盤</p>
+    <h1>把出生時刻，<br />排成一張看得懂的星圖。</h1>
+    <p class="hero-copy">
+      計算命宮、五行局、十四主星、四化與大限流年，再用規則引擎整理成一份可以閱讀、
+      可以對照生活的解讀。
+    </p>
+    <ul class="hero-points">
+      <li>完整十二宮排盤</li>
+      <li>生年與運限四化</li>
+      <li>大限、流年、小限</li>
+    </ul>
+  </section>
+
+  <section class="panel form-panel" aria-labelledby="formTitle">
+    <div class="panel-head">
+      <h2 id="formTitle">輸入出生資料</h2>
+      <button type="button" id="demoBtn" class="text-btn">填入範例</button>
+    </div>
+    <form id="birthForm" novalidate>
+      <div class="form-grid">
+        <label class="field">
+          <span class="field-label">姓名 <em>選填</em></span>
+          <input type="text" name="name" id="name" maxlength="20" autocomplete="name" placeholder="例：王小明" />
+        </label>
+
+        <div class="field">
+          <span class="field-label">性別</span>
+          <div class="segmented" role="radiogroup" aria-label="性別">
+            <label><input type="radio" name="gender" value="女" checked /><span>女</span></label>
+            <label><input type="radio" name="gender" value="男" /><span>男</span></label>
+          </div>
+        </div>
+
+        <div class="field">
+          <span class="field-label">曆別</span>
+          <div class="segmented" role="radiogroup" aria-label="曆別">
+            <label><input type="radio" name="calendar" value="solar" checked /><span>國曆</span></label>
+            <label><input type="radio" name="calendar" value="lunar" /><span>農曆</span></label>
+          </div>
+        </div>
+
+        <div class="field field-wide">
+          <span class="field-label">出生日期 <em id="calendarHint">國曆（西元）</em></span>
+          <div class="date-row">
+            <input type="number" id="year" name="year" inputmode="numeric" min="1900" max="2100" value="1990" aria-label="年" />
+            <span class="unit">年</span>
+            <select id="month" name="month" aria-label="月"></select>
+            <span class="unit">月</span>
+            <select id="day" name="day" aria-label="日"></select>
+            <span class="unit">日</span>
+            <label class="leap-toggle" id="leapWrap" hidden>
+              <input type="checkbox" id="isLeapMonth" name="isLeapMonth" /> 閏月
+            </label>
+          </div>
+        </div>
+
+        <label class="field">
+          <span class="field-label">出生時辰</span>
+          <select id="timeIndex" name="timeIndex"></select>
+        </label>
+
+        <label class="field">
+          <span class="field-label">要看哪一年的運勢</span>
+          <select id="fortuneYear" name="fortuneYear"></select>
+        </label>
+      </div>
+
+      <div class="form-foot">
+        <p class="form-note">
+          時辰以當地鐘錶時間輸入；若在意真太陽時，可先自行換算後再排盤。閏月預設依「下半月算下個月」處理。
+        </p>
+        <button type="submit" class="primary-btn" id="submitBtn">
+          <span>開始排盤</span>
+          <svg viewBox="0 0 20 20" aria-hidden="true"><path d="M4 10h11M11 5l5 5-5 5" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/></svg>
+        </button>
+      </div>
+      <p class="error-msg" id="errorMsg" role="alert" hidden></p>
+    </form>
+  </section>
+
+  <section id="result" class="result" hidden aria-live="polite">
+    <div class="result-head panel">
+      <div class="identity">
+        <p class="eyebrow">命盤 · NATAL CHART</p>
+        <h2 id="identityName">—</h2>
+        <p class="identity-meta" id="identityMeta"></p>
+        <div class="tag-row" id="tagRow"></div>
+      </div>
+      <div class="score-block">
+        <div class="score-ring" id="scoreRing" style="--p:0">
+          <div class="score-inner"><strong id="scoreValue">0</strong><small>/ 100</small></div>
+        </div>
+        <div class="score-caption">
+          <span id="scoreGrade">—</span>
+          <small>命宮三方四正綜合</small>
+        </div>
+      </div>
+    </div>
+
+    <div class="panel chart-panel">
+      <div class="panel-head">
+        <h2>十二宮命盤</h2>
+        <div class="chart-legend">
+          <span class="lg lu">化祿</span>
+          <span class="lg quan">化權</span>
+          <span class="lg ke">化科</span>
+          <span class="lg ji">化忌</span>
+          <span class="lg body">身宮</span>
+        </div>
+      </div>
+      <p class="chart-hint">點宮位看解讀；滑過宮位會標出它的三方四正。手機可左右滑動命盤。</p>
+      <div class="chart-scroll">
+        <div class="chart-grid" id="chartGrid"></div>
+      </div>
+      <div id="palaceDetail" class="palace-detail" hidden></div>
+    </div>
+
+    <nav class="tabs" aria-label="解讀分頁">
+      <button type="button" class="tab is-active" data-tab="overview">總覽</button>
+      <button type="button" class="tab" data-tab="palaces">十二宮</button>
+      <button type="button" class="tab" data-tab="patterns">格局</button>
+      <button type="button" class="tab" data-tab="fortune">大限流年</button>
+    </nav>
+
+    <div class="tab-panels">
+      <section class="tab-panel is-active" data-panel="overview">
+        <div class="panel prose-panel">
+          <h2>你是什麼樣的人</h2>
+          <div id="personalityText" class="prose"></div>
+          <div class="keyword-row" id="keywordRow"></div>
+        </div>
+        <div class="panel">
+          <h2>五個面向</h2>
+          <div class="dimension-list" id="dimensionList"></div>
+        </div>
+        <div class="panel luck-panel" id="luckPanel"></div>
+        <div class="panel notes-panel">
+          <h2>使用說明</h2>
+          <ul id="notesList"></ul>
+        </div>
+      </section>
+
+      <section class="tab-panel" data-panel="palaces">
+        <div class="palace-cards" id="palaceCards"></div>
+      </section>
+
+      <section class="tab-panel" data-panel="patterns">
+        <div class="patterns-intro panel">
+          <h2>命格格局</h2>
+          <p>格局是「星曜組合」的速記，不是好壞判決。下列是命宮三方四正符合的經典組合。</p>
+        </div>
+        <div class="pattern-list" id="patternList"></div>
+      </section>
+
+      <section class="tab-panel" data-panel="fortune">
+        <div class="fortune-toolbar panel">
+          <div>
+            <h2>運限</h2>
+            <p id="fortuneSub"></p>
+          </div>
+          <label class="field field-inline">
+            <span class="field-label">流年</span>
+            <select id="fortuneYearInline"></select>
+          </label>
+        </div>
+        <div class="fortune-grid" id="fortuneGrid"></div>
+        <div class="panel">
+          <h2>大限時間軸</h2>
+          <ol class="timeline" id="timeline"></ol>
+        </div>
+      </section>
+    </div>
+  </section>
+
+  <footer class="site-footer">
+    <p>紫微斗數排盤引擎：<a href="https://github.com/SylarLong/iztro" target="_blank" rel="noreferrer">iztro</a>（MIT）。
+      解讀文字由本程式規則庫生成，僅供自我覺察與娛樂參考。</p>
+  </footer>
+</main>
+
+<div class="toast" id="toast" hidden></div>
+
+<script src="./render.js"></script>
+<script src="./interactions.js"></script>
+<script src="./reading.js"></script>
+<script src="./reading2.js"></script>
+<script src="./form.js"></script>
+<script src="./ui.js"></script>
+<script src="./app.js"></script>
+</body>
+</html>

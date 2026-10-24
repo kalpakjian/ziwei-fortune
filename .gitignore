@@ -1,0 +1,13 @@
+# 依賴與建置產物
+node_modules/
+docs/
+shots/
+_art/
+
+# 執行期產生的日誌與輸出
+*.log
+*.err
+*.out
+npm-debug.log*
+
+.DS_Store

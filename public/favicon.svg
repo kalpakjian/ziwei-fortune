@@ -1,0 +1,5 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64" role="img" aria-label="紫微斗數">
+  <rect width="64" height="64" rx="14" fill="#0b1017"/>
+  <rect x="1.2" y="1.2" width="61.6" height="61.6" rx="13" fill="none" stroke="#d9b871" stroke-opacity="0.55" stroke-width="1.6"/>
+  <text x="32" y="44" font-size="33" text-anchor="middle" fill="#e8cd8f" font-family="Songti TC, SimSun, serif">紫</text>
+</svg>

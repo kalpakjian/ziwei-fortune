@@ -1,0 +1,7 @@
+# 文字檔在 repo 內一律存成 LF，由 git 依平台在 working tree 還原
+* text=auto
+
+# 二進位檔案不做換行轉換
+*.jpg binary
+*.png binary
+*.ico binary

@@ -1,0 +1,35 @@
+{
+  "name": "ziwei-fortune",
+  "version": "1.0.0",
+  "description": "紫微斗數排盤與規則式解讀：Node.js + iztro，含十二宮命盤、四化、大限流年與 CLI",
+  "main": "server.js",
+  "scripts": {
+    "start": "node server.js",
+    "dev": "node --watch server.js",
+    "cli": "node cli.js",
+    "build": "node scripts/build-static.mjs",
+    "preview": "node scripts/static-server.mjs",
+    "sync:hexo": "node scripts/sync-hexo.mjs",
+    "test": "node scripts/api-test.mjs",
+    "test:e2e": "node scripts/smoke.mjs",
+    "test:static": "node scripts/static-test.mjs"
+  },
+  "keywords": [
+    "ziwei",
+    "紫微斗數",
+    "astrology",
+    "fortune",
+    "iztro"
+  ],
+  "author": "",
+  "license": "MIT",
+  "type": "commonjs",
+  "dependencies": {
+    "express": "^5.3.0",
+    "iztro": "^2.6.3"
+  },
+  "devDependencies": {
+    "esbuild": "^0.28.2",
+    "playwright-core": "^1.64.1"
+  }
+}

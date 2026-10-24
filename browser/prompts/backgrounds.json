@@ -1,0 +1,29 @@
+{
+  "_comment": "雙主題背景圖的生成紀錄。本機 ComfyUI + Qwen-Image 2.1，種子固定可重現。",
+  "engine": "Qwen-Image 2.1 (local ComfyUI)",
+  "workflow": "D:\\AI\\ComfyUI\\workflows\\image\\qwen_image_2_1_text2img_api.json",
+  "width": 1536,
+  "height": 864,
+  "steps": 25,
+  "cfg": 2.5,
+  "dark": {
+    "prompt_file": "browser/prompts/background-dark.txt",
+    "seed": 7312,
+    "candidates": [7311, 7312, 7313],
+    "selected": 7312,
+    "output": "public/bg-ziwei.jpg (1536x864, q80, 109 KB)",
+    "mobile": "public/bg-ziwei-mobile.jpg (960x540, q76, 38 KB)",
+    "qa": "正圓二十八宿星盤、左側近乎純黑適合 hero 文案；環上偽字極淡，縮成背景不可見。"
+  },
+  "light": {
+    "prompt_file": "browser/prompts/background-light.txt",
+    "seed": 7403,
+    "candidates": [7401, 7402, 7403],
+    "selected": 7403,
+    "output": "public/bg-ziwei-light.jpg (1250x864, q82, 56 KB)",
+    "mobile": "public/bg-ziwei-light-mobile.jpg (960x664, q80, 34 KB)",
+    "crop": "右側裁到 1250px，去掉邊緣紙卷與偽文字風險",
+    "postprocess": "autocontrast + contrast 1.32 + color 1.18；古書區局部 12px 高斯柔化，八卦保持清晰",
+    "qa": "左側留白最適合標題；古書＋八卦＋太極元素最豐富，無可讀文字。"
+  }
+}
