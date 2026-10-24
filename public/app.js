@@ -147,6 +147,12 @@
         return;
       }
       window.ZiweiExport.exportMarkdown(state.result);
+      const ds = state.result.dataset;
+      window.ZiweiUI.toast(
+        ds && ds.available
+          ? '已匯出完整解讀（含 v4.0 詳細解讀）。'
+          : '已匯出精簡版：這個版本沒有 v4.0 資料集，詳細解讀請用本機版匯出。'
+      );
     });
 
     document.addEventListener('click', (ev) => {

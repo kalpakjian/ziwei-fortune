@@ -89,11 +89,14 @@
       out.push(`> 出處：${dataset.source.attribution}`);
       out.push(`> ${dataset.source.note}`);
       out.push('');
-    } else if (dataset) {
+    } else {
       out.push('## 詳細解讀（v4.0 資料集）');
       out.push('');
-      out.push(`> 本份匯出**不含**v4.0 詳細解讀：${dataset.message || '本機沒有對應年度的資料集。'}`);
-      out.push('> 若要完整內容，請在裝有資料集的機器上重新排盤後匯出（npm run dataset:download -- --year <西元年>）。');
+      out.push('> **本份匯出不含 v4.0 詳細解讀。**');
+      if (dataset && dataset.message) out.push(`> 原因：${dataset.message}`);
+      out.push('> 線上靜態版（GitHub Pages）無法內建資料集，只有本機版才有這一段。');
+      out.push('> 要完整內容：本機執行 `npm run dataset:download -- --year <西元年>`，');
+      out.push('> 再用 `npm start` 開啟的網頁排盤並匯出。');
       out.push('');
     }
 
