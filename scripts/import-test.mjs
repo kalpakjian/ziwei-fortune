@@ -81,6 +81,11 @@ const cases = [
     line: '1990-5-17 男',
     expect: (r) => r.timeIndex === 6 && /時辰/.test(r.note),
   },
+  {
+    name: '點分隔日期 + 簡體時辰 + 無姓名',
+    line: '1984.3.1.卯时 女',
+    expect: (r) => r.year === 1984 && r.month === 3 && r.day === 1 && r.timeIndex === 3 && r.gender === '女' && r.name === '',
+  },
 ];
 
 for (const c of cases) {

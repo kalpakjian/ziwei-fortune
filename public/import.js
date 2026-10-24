@@ -72,6 +72,8 @@
       rest = rest.replace(s, ' ');
     });
     rest = rest.replace(/[，,、;；|]+/g, ' ').replace(/\s+/g, ' ').trim();
+    // 只剩下標點符號（例如「1984.3.1.卯时」多出來的點）→ 視為沒有姓名
+    if (/^[\s.．·\-–—_/\\()（）[\]「」『』:：]+$/.test(rest)) return '';
     if (/^\d+$/.test(rest)) return '';
     return rest.slice(0, 20);
   }
