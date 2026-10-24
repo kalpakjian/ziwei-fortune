@@ -16,7 +16,9 @@
     "test": "node scripts/api-test.mjs",
     "test:e2e": "node scripts/smoke.mjs",
     "test:static": "node scripts/static-test.mjs",
-    "test:dataset": "node scripts/dataset-test.mjs"
+    "test:dataset": "node scripts/dataset-test.mjs",
+    "test:ganzhi": "node scripts/ganzhi-test.mjs",
+    "test:import": "node scripts/import-test.mjs"
   },
   "keywords": [
     "ziwei",

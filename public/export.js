@@ -113,20 +113,41 @@
     return String(text || '命盤').replace(/[\\/:*?"<>|]/g, '_').slice(0, 40);
   }
 
-  function exportMarkdown(result) {
-    if (!result) return;
-    const md = buildMarkdown(result);
-    const blob = new Blob([md], { type: 'text/markdown;charset=utf-8' });
+  function download(text, filename) {
+    const blob = new Blob([text], { type: 'text/markdown;charset=utf-8' });
     const url = URL.createObjectURL(blob);
     const a = document.createElement('a');
-    const meta = result.chart.meta;
     a.href = url;
-    a.download = `命盤解讀_${safeName(meta.name)}_${meta.solarDate}.md`;
+    a.download = filename;
     document.body.appendChild(a);
     a.click();
     a.remove();
     setTimeout(() => URL.revokeObjectURL(url), 1000);
   }
 
-  window.ZiweiExport = { buildMarkdown, exportMarkdown };
+  function exportMarkdown(result) {
+    if (!result) return;
+    const md = buildMarkdown(result);
+    const meta = result.chart.meta;
+    download(md, `命盤解讀_${safeName(meta.name)}_${meta.solarDate}.md`);
+  }
+
+  /** 批次匯出：多張盤合成一份 Markdown */
+  function exportBatch(results) {
+    const list = (results || []).filter(Boolean);
+    if (!list.length) return;
+    const stamp = new Date().toISOString().slice(0, 10);
+    const head = [
+      `# 批次命盤解讀（${list.length} 人）`,
+      '',
+      `匯出時間：${new Date().toLocaleString('zh-TW')}`,
+      '',
+      '> 命理是文化與自我對話的工具，不是科學預測。本內容不構成醫療、法律、投資或婚姻建議。',
+      '',
+    ].join('\n');
+    const body = list.map((r) => buildMarkdown(r)).join('\n\n---\n\n');
+    download(`${head}${body}`, `命盤解讀_批次_${list.length}人_${stamp}.md`);
+  }
+
+  window.ZiweiExport = { buildMarkdown, exportMarkdown, exportBatch };
 })();

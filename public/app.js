@@ -189,6 +189,36 @@
     }
   }
 
+  /** 把一筆生辰資料填進表單（匯入功能用） */
+  function fillForm(data) {
+    const $ = window.ZiweiForm.$;
+    if (data.name !== undefined) $('name').value = data.name;
+    if (data.gender) {
+      const radio = document.querySelector(`input[name="gender"][value="${data.gender}"]`);
+      if (radio) radio.checked = true;
+    }
+    if (data.calendar) {
+      const radio = document.querySelector(`input[name="calendar"][value="${data.calendar}"]`);
+      if (radio) {
+        radio.checked = true;
+        radio.dispatchEvent(new Event('change'));
+      }
+    }
+    if (data.year) $('year').value = String(data.year);
+    window.ZiweiForm.fillMonths();
+    if (data.month) $('month').value = String(data.month);
+    window.ZiweiForm.fillDays(true);
+    if (data.day) $('day').value = String(data.day);
+    if (data.timeIndex !== undefined) $('timeIndex').value = String(data.timeIndex);
+    if (data.isLeapMonth !== undefined) {
+      const leap = $('isLeapMonth');
+      if (leap) leap.checked = !!data.isLeapMonth;
+      const wrap = $('leapWrap');
+      if (wrap) wrap.hidden = !data.isLeapMonth && !window.ZiweiForm.isLunar();
+    }
+    window.ZiweiForm.syncYearSelects(state.year);
+  }
+
   function init() {
     window.ZiweiUI.initTheme();
     window.ZiweiUI.initTabs();
@@ -196,6 +226,7 @@
     window.ZiweiForm.init();
     bindEvents();
     loadTimeOptions();
+    if (window.ZiweiImport && window.ZiweiImport.init) window.ZiweiImport.init();
 
     // 列印時展開所有宮位卡，避免 details 收合導致內容消失
     window.addEventListener('beforeprint', () => {
@@ -204,6 +235,8 @@
       });
     });
   }
+
+  window.ZiweiApp = { requestChart, collect, fillForm, submitForm, renderResult };
 
   if (document.readyState === 'loading') {
     document.addEventListener('DOMContentLoaded', init);

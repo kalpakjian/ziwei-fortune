@@ -128,6 +128,31 @@
     </form>
   </section>
 
+  <details class="panel import-panel" id="importPanel">
+    <summary>
+      <span class="import-summary-title">匯入生辰（批次）</span>
+      <span class="import-summary-hint">朋友給的生辰或八字，貼上就能一次排完並匯出詳細解讀</span>
+    </summary>
+    <div class="import-body">
+      <p class="form-note">
+        每行一筆，可用以下寫法（順序不拘）：
+        <code>1970-11-6 巳時 男 劉德亮</code>、<code>劉德亮 1990-5-17 午時 女</code>、
+        <code>農曆 1990-4-23 子時 男</code>、<code>庚戌 丁亥 庚寅 辛巳</code>（四柱八字，會自動換算西元日期）。
+      </p>
+      <textarea id="importText" rows="4" spellcheck="false" placeholder="每行一筆，例如：&#10;1970-11-6 巳時 男 劉德亮&#10;1990-5-17 午時 女 王小明"></textarea>
+      <div class="import-actions">
+        <button type="button" id="importParseBtn" class="text-btn">解析</button>
+        <label class="leap-toggle"><input type="checkbox" id="importLeap" />農曆視為閏月</label>
+      </div>
+      <div id="importPreview"></div>
+      <div class="import-actions">
+        <button type="button" id="importFirstBtn" class="primary-btn">匯入第一筆並排盤</button>
+        <button type="button" id="importBatchBtn" class="primary-btn">批次排盤並匯出詳細解讀</button>
+      </div>
+      <p class="form-note" id="importStatus"></p>
+    </div>
+  </details>
+
   <section id="result" class="result" hidden aria-live="polite">
     <div class="result-head panel">
       <div class="identity">
@@ -244,6 +269,9 @@
 <script src="./reading2.js"></script>
 <script src="./reading3.js"></script>
 <script src="./form.js"></script>
+<script src="./ganzhi-data.js"></script>
+<script src="./ganzhi.js"></script>
+<script src="./import.js"></script>
 <script src="./ui.js"></script>
 <script src="./export.js"></script>
 <script src="./app.js"></script>
