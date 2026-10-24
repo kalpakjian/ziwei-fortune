@@ -13,6 +13,25 @@
     return String(text || '').replace(/^(#{1,5})\s/gm, (m, hashes) => `${hashes}# `);
   }
 
+  /** 以節氣換月的四柱（主流八字軟體口徑），與 iztro 印的通書式月柱互相對照 */
+  function baziBySolarTerm(meta) {
+    const G = window.ZiweiGanzhi;
+    if (!G) return '';
+    const m = /^(\d{4})-(\d{1,2})-(\d{1,2})$/.exec(String(meta.solarDate || ''));
+    if (!m) return '';
+    const label = String(meta.time || '');
+    let timeIndex = -1;
+    if (label === '早子時') timeIndex = 0;
+    else if (label === '晚子時') timeIndex = 12;
+    else {
+      const idx = (G.BRANCHES || []).indexOf(label[0]);
+      if (idx >= 0) timeIndex = idx;
+    }
+    if (timeIndex < 0) return '';
+    const p = G.pillars([Number(m[1]), Number(m[2]), Number(m[3])], timeIndex, true);
+    return `${p.year} ${p.month} ${p.day} ${p.hour}`;
+  }
+
   function buildMarkdown(result) {
     const { chart, reading, fortune, dataset } = result;
     const meta = chart.meta;
@@ -23,6 +42,8 @@
     out.push(`- 性別：${meta.gender}`);
     out.push(`- 國曆：${meta.solarDate}（${meta.time} ${meta.timeRange}）`);
     out.push(`- 農曆：${meta.lunarDate} · ${meta.chineseDate}`);
+    const bazi = baziBySolarTerm(meta);
+    if (bazi) out.push(`- 四柱（節氣換月）：${bazi}`);
     out.push(`- 五行局：${meta.fiveElementsClass} · 命主 ${meta.soul} · 身主 ${meta.body}`);
     out.push(`- 生肖 ${meta.zodiac} · 命宮在${meta.soulBranch}`);
     out.push('');
